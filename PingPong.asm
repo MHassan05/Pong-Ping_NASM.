@@ -10,6 +10,8 @@ intro_3: db '1. Press "1" for Moving Screen. ', 0
 intro_4: db '2. Press "2" for Static Screen. ', 0
 intro_5: db '3. Press "3" to Exit. ', 0
 intro_6: db 'Waiting for your COMMAND.....', 0
+
+; outro message for user 
 Outro: db 'Thank you for playing the game! Allah Hafiz', 0
 
 ; A subroutine that will clear the whole screen
@@ -180,8 +182,6 @@ start:
         je Exit
         jmp InValidInput
 
-
-
 MovingScreen:
     call clrScreen
     mov ax, 1618
@@ -196,7 +196,6 @@ StaticScreen:
     push ax
     push word msg1
     call printMessage
-
 
 Exit:
     mov ax, 3710
