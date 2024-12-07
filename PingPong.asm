@@ -2,7 +2,6 @@
 
 jmp start
 
-msg1: db 'Under Development........ In Sha Allah we will complete it Soon!', 0
 ; Intro headings
 intro_1: db 'Ping Pong Game', 0
 intro_2: db 'Welcome to Ping Pong!', 0
@@ -11,8 +10,21 @@ intro_4: db '2. Press "2" for Static Screen. ', 0
 intro_5: db '3. Press "3" to Exit. ', 0
 intro_6: db 'Waiting for your COMMAND.....', 0
 
-; outro message for user 
+Score: db 'Score: ', 0
+player1: db 'Player 1', 0
+player2: db 'Player 2', 0
+player1Score: db 0x30
+player2Score: db 0x30
+
+; winning headings
+winner1: db 'Congratulations! Player 1 won the game.', 0
+winner2: db 'Congratulatons! Player 2 won the game.', 0
+
+; outro headings
 Outro: db 'Thank you for playing the game! Allah Hafiz', 0
+
+; Credits
+Credits: db 'Developed By:  Rizwan Mustafa Khan(23F-0709)   AND   Muhammad Hassan (23F-0676)', 0
 
 ; A subroutine that will clear the whole screen
 clrScreen:
@@ -23,7 +35,6 @@ clrScreen:
     mov dx, 0x184f
     int 0x10
     ret 
-
 
 ; A subroutine that will calculate the length of string
 strLen:
@@ -163,6 +174,97 @@ printIntro:
     pop ax
     ret 
 
+; A subroutine that will print the gaming screen
+printGameEnvironment:
+    push bp
+    mov bp, sp
+    push ax
+    push bx
+    push cx 
+    push dx 
+    push es
+    push cx
+    push di
+    push si
+
+    mov ax, 0xb800
+    mov es, ax
+    xor di, di
+    mov di, 320
+    
+    push di
+    push word [bp + 4]
+    call printMessage
+
+    add di, 40
+    push di
+    push word [bp + 8]
+    call printMessage
+
+    add di, 14
+    mov al, [player1Score]
+    mov ah, 0x07
+    mov word [es:di], ax
+
+    add di, 26
+    push di
+    push word [bp + 6]
+    call printMessage
+
+    add di, 40
+    push di
+    push word [bp + 8]
+    call printMessage
+
+    add di, 14
+    mov al, [player2Score]
+    mov ah, 0x07
+    mov word [es:di], ax
+
+    mov di, 480
+    mov cx, 80
+    mov ax, 0x072D
+    GameHeader:
+        mov word [es:di], ax
+        cmp cx, 42
+        jne Continue
+
+        mov si, di
+        sub si, 160
+        mov word [es:si], 0x077C
+
+        sub si, 160
+        mov word [es:si], 0x077C
+
+        sub si, 160
+        mov word [es:si], 0x077C
+            
+        Continue:
+        add di, 2
+        loop GameHeader
+
+    mov di, 3520
+    mov cx, 80
+    GameFooter:
+        mov word [es:di], ax
+        add di, 2
+        loop GameFooter
+
+    push di
+    push word Credits
+    call printMessage
+
+    pop si
+    pop di
+    pop cx
+    pop es 
+    pop dx 
+    pop cx
+    pop bx 
+    pop ax 
+    pop bp
+    ret 6
+
 ; A subroutine that will get the key press from user
 getKey:
     mov ah, 0
@@ -179,26 +281,36 @@ start:
         cmp al, '2'
         je StaticScreen
         cmp al, '3'
-        je Exit
+        je ExitOption
         jmp InValidInput
 
 MovingScreen:
     call clrScreen
-    mov ax, 1618
-    push ax
-    push word msg1
-    call printMessage
 
-    jmp Exit
+    push word Score
+    push word player2
+    push word player1
+    call printGameEnvironment
+
+    jmp GameEnd
+
 StaticScreen:
     call clrScreen
-    mov ax, 1618
-    push ax
-    push word msg1
-    call printMessage
+
+    push word Score
+    push word player2
+    push word player1
+    call printGameEnvironment
+
+
+GameEnd:
+    mov ax, 1956
+    jmp Exit
+
+ExitOption:
+    mov ax, 3710
 
 Exit:
-    mov ax, 3710
     push ax
     push word Outro
     call printMessage
