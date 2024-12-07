@@ -10,11 +10,15 @@ intro_4: db '2. Press "2" for Static Screen. ', 0
 intro_5: db '3. Press "3" to Exit. ', 0
 intro_6: db 'Waiting for your COMMAND.....', 0
 
+; some player required attributes 
 Score: db 'Score: ', 0
 player1: db 'Player 1', 0
 player2: db 'Player 2', 0
 player1Score: db 0x30
 player2Score: db 0x30
+
+; clouds for moving screen
+Clouds: db '***__***   *****__****   ****__***', 0
 
 ; winning headings
 winner1: db 'Congratulations! Player 1 won the game.', 0
@@ -291,6 +295,12 @@ MovingScreen:
     push word player2
     push word player1
     call printGameEnvironment
+    
+    mov di, 680
+    push di
+    push word Clouds
+    call printMessage
+
 
     jmp GameEnd
 
