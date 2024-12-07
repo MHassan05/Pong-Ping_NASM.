@@ -10,12 +10,20 @@ intro_4: db '2. Press "2" for Static Screen. ', 0
 intro_5: db '3. Press "3" to Exit. ', 0
 intro_6: db 'Waiting for your COMMAND.....', 0
 
+; Pause Game Message
+PauseGameMessage: db 'Game Paused! Press any key to continue.', 0
+
 ; some player required attributes 
 Score: db 'Score: ', 0
 player1: db 'Player 1', 0
 player2: db 'Player 2', 0
 player1Score: db 0x30
 player2Score: db 0x30
+
+; paddles and ball positions
+leftPaddle: dw 1760
+rightPaddle: dw 1918
+ballPosition: dw 1998
 
 ; clouds for moving screen
 Clouds: db '***__***   *****__****   ****__***', 0
@@ -32,12 +40,22 @@ Credits: db 'Developed By:  Rizwan Mustafa Khan(23F-0709)   AND   Muhammad Hassa
 
 ; A subroutine that will clear the whole screen
 clrScreen:
+    push ax
+    push bx
+    push cx
+    push dx
+
     mov ah, 0x06
     mov al, 0x00
     mov bh, 0x07
     mov cx, 0
     mov dx, 0x184f
     int 0x10
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
     ret 
 
 ; A subroutine that will calculate the length of string
@@ -183,11 +201,8 @@ printGameEnvironment:
     push bp
     mov bp, sp
     push ax
-    push bx
     push cx 
-    push dx 
     push es
-    push cx
     push di
     push si
 
@@ -258,13 +273,22 @@ printGameEnvironment:
     push word Credits
     call printMessage
 
+    mov di, [leftPaddle]
+    push di
+    call printPaddles
+
+    mov di, [ballPosition]
+    push di
+    call printBall
+
+    mov di, [rightPaddle]
+    push di 
+    call printPaddles
+
     pop si
     pop di
-    pop cx
     pop es 
-    pop dx 
     pop cx
-    pop bx 
     pop ax 
     pop bp
     ret 6
@@ -275,9 +299,127 @@ getKey:
     int 16h         ; taking input from user 
     ret
 
+; A subroutine that will print the paddles
+printPaddles:
+    push bp
+    mov bp, sp
+    push cx
+    push es
+    push di
+
+    mov di, 0xb800
+    mov es, di
+
+    mov di, [bp + 4]
+    mov cx, 3
+    printPaddle:
+        mov word [es:di], 0x077C
+        add di, 160
+        loop printPaddle
+
+    pop di
+    pop es
+    pop cx
+    pop bp
+    ret 2
+
+; A subroutine that will print the ball
+printBall:
+    push bp
+    mov bp, sp
+    push di
+
+    mov di, [bp + 4]
+    mov word [es:di], 0x076F              ; ascii code for ball
+
+    pop di
+    pop bp
+    ret 2
+
+; A subroutine to play the game 
+playGame:
+    push bp
+    mov bp, sp
+    push bx
+    push cx
+    push dx
+    push es
+    push di
+    push si
+
+    mov ax, 0xb800
+    mov es, ax
+    xor di, di
+
+    reTakeInput:
+    mov ah, 0
+    int 16h
+
+    cmp al, 'w'
+    je MoveLeftPaddleUp
+
+    cmp al, 's'
+    je MoveLeftPaddleDown
+
+    cmp al, 'p'
+    je PauseGame
+
+    cmp ax, 0x4800
+    je MoveRightPaddleUp
+
+    cmp ax, 0x5000
+    je MoveRightPaddleDown
+
+    cmp ax, 0x011B
+    je doneMovements
+
+    jmp reTakeInput
+
+    MoveRightPaddleUp:
+        sub word [rightPaddle], 160
+        jmp doneMovements
+
+    MoveRightPaddleDown:
+        add word [rightPaddle], 160
+        jmp doneMovements
+
+    MoveLeftPaddleUp:
+        sub word [leftPaddle], 160
+        jmp doneMovements
+
+    MoveLeftPaddleDown:
+        add word [leftPaddle], 160
+        jmp doneMovements
+
+    PauseGame:
+        mov di, 1956
+        push di
+        push word PauseGameMessage
+        call printMessage
+        mov ah, 0
+        int 16h
+
+    doneMovements:
+    pop si
+    pop di
+    pop es
+    pop dx
+    pop cx
+    pop bx
+    pop bp
+    ret 
+
+resetGame:
+    mov word [leftPaddle], 1760
+    mov word [rightPaddle], 1918
+    mov word [ballPosition], 1998
+    mov byte [player1Score], 0x30
+    mov byte [player2Score], 0x30
+    ret
+
 start:
     call printIntro
-
+    call resetGame
     InValidInput:
         call getKey
         cmp al, '1'
@@ -289,8 +431,8 @@ start:
         jmp InValidInput
 
 MovingScreen:
-    call clrScreen
 
+    call clrScreen
     push word Score
     push word player2
     push word player1
@@ -300,18 +442,24 @@ MovingScreen:
     push di
     push word Clouds
     call printMessage
+    call playGame
 
-
-    jmp GameEnd
+    cmp ax, 0x011B
+    je start
+    jmp MovingScreen
 
 StaticScreen:
     call clrScreen
-
     push word Score
     push word player2
     push word player1
     call printGameEnvironment
+    call playGame
 
+    cmp ax, 0x011B
+    je start
+
+    jmp StaticScreen
 
 GameEnd:
     mov ax, 1956
