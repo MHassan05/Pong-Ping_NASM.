@@ -10,8 +10,9 @@ intro_4: db '2. Press "2" for Static Screen. ', 0
 intro_5: db '3. Press "3" to Exit. ', 0
 intro_6: db 'Waiting for your COMMAND.....', 0
 
-; Pause Game Message
+; Pause and Restart Game Message
 PauseGameMessage: db 'Game Paused! Press any key to continue.', 0
+RestartGameMessage: db 'Press any key to restart the game and "ESC" to exit.', 0
 
 ; some player required attributes 
 Score: db 'Score: ', 0
@@ -644,7 +645,6 @@ MovingScreen:
     call moveBall
     call checkLeftRightBorder
 
-
     cmp ax, 0x011B
     je start
 
@@ -680,7 +680,7 @@ GameEnd:
     je Player1Won
 
     mov di, 1956
-    sub di, 160
+    sub di, 320
     push di
     push word winner2
     call printMessage
@@ -688,12 +688,35 @@ GameEnd:
 
     Player1Won: 
         mov di, 1956
-        sub di, 160
+        sub di, 320
         push di
         push word winner1
         call printMessage
     
     printingin:
+        mov di, 1956
+        sub di, 160
+        push di
+        push word RestartGameMessage
+        call printMessage
+
+        mov ah, 01h        ; Check if any key is pressed
+        int 16h
+        jz wait_for_input   ; If no key is pressed, wait for input
+
+        mov ah, 00h        ; Get the key from buffer (ignore the previous one)
+        int 16h
+
+    wait_for_input:
+        mov ah, 00h        ; Now wait for a new keypress
+        int 16h
+
+        cmp ax, 0x011B
+        je endGame 
+
+        jmp start
+
+    endGame:
     mov ax, 1956
     jmp Exit
 
