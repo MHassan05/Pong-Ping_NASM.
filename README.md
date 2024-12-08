@@ -1,11 +1,5 @@
 # Ping Pong Game in NASM
 
-## About
-A simple Ping Pong game implemented in NASM assembly language for the EE2003 – Computer Organization and Assembly Language course. This game allows two players to control paddles and try to prevent the ball from crossing their side of the screen. The game keeps track of the score and declares the winner when a player reaches a predefined score.
-
-## Introduction
-This project is developed as part of the **EE2003 – Computer Organization and Assembly Language** course at **National University Computer & Emerging Sciences – Chiniot FSD Campus**. The aim of the project is to demonstrate assembly programming skills by implementing a simple yet engaging Ping Pong game using **NASM assembly language**. The game works in a **DOSBox** emulator and involves two players controlling paddles to prevent the ball from crossing their side, with scoring and a win condition implemented.
-
 ## Developers
 - **Rizwan Mustafa Khan** (23F-0709)
 - **Muhammad Hassan** (23F-0676)
@@ -14,6 +8,12 @@ This project is developed as part of the **EE2003 – Computer Organization and 
 For inquiries or feedback, you can contact the developers via email:
 - Rizwan Mustafa Khan: [f230709@cfd.nu.edu.pk]
 - Muhammad Hassan: [f230676@cfd.nu.edu.pk]
+
+## About
+A simple Ping Pong game implemented in NASM assembly language for the EE2003 – Computer Organization and Assembly Language course. This game allows two players to control paddles and try to prevent the ball from crossing their side of the screen. The game keeps track of the score and declares the winner when a player reaches a predefined score.
+
+## Introduction
+This project is developed as part of the **EE2003 – Computer Organization and Assembly Language** course at **National University Computer & Emerging Sciences – Chiniot FSD Campus**. The aim of the project is to demonstrate assembly programming skills by implementing a simple yet engaging Ping Pong game using **NASM assembly language**. The game works in a **DOSBox** emulator and involves two players controlling paddles to prevent the ball from crossing their side, with scoring and a win condition implemented.
 
 ## Features
 - Two-player gameplay with keyboard controls.
@@ -43,6 +43,7 @@ For inquiries or feedback, you can contact the developers via email:
 - Improved collision detection and smoother gameplay.
 - Additional sound effects and advanced graphics.
 - Difficulty settings and game modes.
+
 
 ## License
 This project is for educational purposes and is not intended for commercial use.
