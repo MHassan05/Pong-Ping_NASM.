@@ -24,6 +24,8 @@ player2Score: db 0x30
 leftPaddle: dw 1760
 rightPaddle: dw 1918
 ballPosition: dw 1998
+direction: db 156, 164
+directionFlag: db 0 
 
 ; clouds for moving screen
 Clouds: db '***__***   *****__****   ****__***', 0
@@ -277,13 +279,20 @@ printGameEnvironment:
     push di
     call printPaddles
 
-    mov di, [ballPosition]
-    push di
-    call printBall
 
     mov di, [rightPaddle]
     push di 
     call printPaddles
+
+
+    call delay
+    call delay
+    mov di, [ballPosition]
+    push di
+    call printBall
+    call delay
+    call delay
+    call delay
 
     pop si
     pop di
@@ -337,21 +346,20 @@ printBall:
     ret 2
 
 ; A subroutine to play the game 
-playGame:
-    push bp
-    mov bp, sp
+playGame:                        
     push bx
-    push cx
-    push dx
     push es
     push di
-    push si
 
     mov ax, 0xb800
     mov es, ax
     xor di, di
 
-    reTakeInput:
+    processKeyPress:
+        mov ah, 1h 
+        int 16h
+        jz near doneMovements
+
     mov ah, 0
     int 16h
 
@@ -373,21 +381,37 @@ playGame:
     cmp ax, 0x011B
     je doneMovements
 
-    jmp reTakeInput
+    jmp processKeyPress
 
     MoveRightPaddleUp:
+        mov bx, [rightPaddle]
+        sub bx, 160
+        cmp bx, 640
+        jl doneMovements
         sub word [rightPaddle], 160
         jmp doneMovements
 
     MoveRightPaddleDown:
+        mov bx, [rightPaddle]
+        add bx, 160
+        cmp bx, 3200
+        jg doneMovements
         add word [rightPaddle], 160
         jmp doneMovements
 
     MoveLeftPaddleUp:
+        mov bx, [leftPaddle]
+        sub bx, 160
+        cmp bx, 640
+        jl doneMovements
         sub word [leftPaddle], 160
         jmp doneMovements
 
     MoveLeftPaddleDown:
+        mov bx, [leftPaddle]
+        add bx, 160
+        cmp bx, 3190
+        jg doneMovements
         add word [leftPaddle], 160
         jmp doneMovements
 
@@ -400,16 +424,62 @@ playGame:
         int 16h
 
     doneMovements:
-    pop si
-    pop di
-    pop es
+        pop di
+        pop es
+        pop bx
+        ret 
+
+; A subroutine to create a delay
+delay:
+    push cx
+    push dx
+
+    mov cx, 0xFFFF  ; Set the delay count (adjust for desired speed)
+    mov dx, 0xFFFF
+    delayLoop:
+    loop delayLoop 
+
     pop dx
     pop cx
-    pop bx
-    pop bp
-    ret 
+    ret
 
+; A subroutine to move the ball
+moveBall:
+    push bx
+
+    mov bx, [ballPosition]
+
+    cmp byte [directionFlag], 0
+    je ADDMovement
+    jmp MoveBallUP
+
+    ADDMovement:
+    add bx, 164
+    cmp bx, 3520
+    jge MoveBallUP
+
+    jmp doneMovingBall
+
+    MoveBallUP: 
+        sub bx, 156
+        mov byte [directionFlag], 1
+        cmp bx, 740
+        jle changeDirection
+
+    jmp doneMovingBall
+
+    changeDirection:
+        xor byte [directionFlag], 1
+
+
+    doneMovingBall:
+        mov [ballPosition], bx
+        pop bx
+        ret
+
+; A subroutine to reset the game
 resetGame:
+
     mov word [leftPaddle], 1760
     mov word [rightPaddle], 1918
     mov word [ballPosition], 1998
@@ -455,7 +525,9 @@ StaticScreen:
     push word player1
     call printGameEnvironment
     call playGame
+    call moveBall
 
+   
     cmp ax, 0x011B
     je start
 
