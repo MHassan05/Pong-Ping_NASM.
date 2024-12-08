@@ -10,6 +10,11 @@ This project is developed as part of the **EE2003 – Computer Organization and 
 - **Rizwan Mustafa Khan** (23F-0709)
 - **Muhammad Hassan** (23F-0676)
 
+## Contact
+For inquiries or feedback, you can contact the developers via email:
+- Rizwan Mustafa Khan: [f230709@cfd.nu.edu.pk]
+- Muhammad Hassan: [f230676@cfd.nu.edu.pk]
+
 ## Features
 - Two-player gameplay with keyboard controls.
 - Ball movement and paddle collision logic.
