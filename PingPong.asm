@@ -23,12 +23,13 @@ player2Score: db 0x30
 ; paddles and ball positions
 leftPaddle: dw 1760
 rightPaddle: dw 1918
-ballPosition: dw 1998
-direction: db 156, 164
+ballPosition: dw 2000
+direction: dw 164
 directionFlag: db 0 
 
 ; clouds for moving screen
-Clouds: db '***__***   *****__****   ****__***', 0
+Clouds: db '***__***       *****__****       ****__***', 0
+CloudsLocation: dw 680
 
 ; winning headings
 winner1: db 'Congratulations! Player 1 won the game.', 0
@@ -279,18 +280,15 @@ printGameEnvironment:
     push di
     call printPaddles
 
-
     mov di, [rightPaddle]
     push di 
     call printPaddles
-
 
     call delay
     call delay
     mov di, [ballPosition]
     push di
     call printBall
-    call delay
     call delay
     call delay
 
@@ -443,39 +441,152 @@ delay:
     pop cx
     ret
 
-; A subroutine to move the ball
+; A subroutine to move the ball and check for collision
 moveBall:
+    push ax
+	push dx
+
+    ; check left paddle collision
+	check_left_paddle_collision:
+		mov ax, [leftPaddle]
+        add ax, 6
+		cmp [ballPosition], ax
+		jne check_left_paddle_middle_part_collision
+		add word [direction], 8
+		jmp boundary_crossing_checker
+
+	check_left_paddle_middle_part_collision:
+		add ax, 160 
+		cmp [ballPosition], ax
+		jne check_left_paddle_lower_part_collision
+		add word [direction], 8
+		jmp boundary_crossing_checker
+
+	check_left_paddle_lower_part_collision:	
+		add ax, 160 
+		cmp [ballPosition], ax
+		jne check_right_paddle_collision 
+		add word [direction], 8
+		jmp boundary_crossing_checker
+
+    ; check right paddle collision
+	check_right_paddle_collision:
+		mov ax, [rightPaddle]
+		cmp [ballPosition], ax
+		jne check_right_paddle_middle_part_collision
+		sub word [direction], 8
+		jmp boundary_crossing_checker
+
+	check_right_paddle_middle_part_collision:
+		add ax, 160 
+		cmp [ballPosition], ax
+		jne check_right_paddle_lower_part_collision
+		sub word [direction], 8
+		jmp boundary_crossing_checker
+
+	check_right_paddle_lower_part_collision:
+        add ax, 160
+		cmp [ballPosition], ax
+		jne boundary_crossing_checker 
+		sub word [direction], 8
+		jmp boundary_crossing_checker
+
+	boundary_crossing_checker:
+		mov ax, [direction] 
+		mov dx, [ballPosition] 
+		add dx, ax
+		mov ax, 320
+		add ax, 160
+		cmp dx, ax
+		jge check_bottom_boundry
+
+		add word [direction], 320 
+		jmp move_ball_end
+
+	check_bottom_boundry:
+		mov ax, 3520
+		sub ax, 160
+		cmp dx, ax 
+		jle move_ball_end
+
+		sub word [direction], 320
+		jmp move_ball_end
+
+	move_ball_end:
+		mov ax, [direction] 
+		add [ballPosition], ax 
+	
+		pop dx
+		pop ax
+		ret
+
+; A subroutine to check for left right corssing of border
+checkLeftRightBorder:
+    push ax
     push bx
+    push dx
 
-    mov bx, [ballPosition]
+    xor dx, dx
+    ; check for left boundry
+    mov ax, [ballPosition]
+    sub ax, 2
+    mov bx, 160
+    div bx
+    cmp dx, 0
+    jne checkForRightSide 
 
-    cmp byte [directionFlag], 0
-    je ADDMovement
-    jmp MoveBallUP
+    cmp word[direction],164
+    je addScoreForPlayer1
 
-    ADDMovement:
-    add bx, 164
-    cmp bx, 3520
-    jge MoveBallUP
+    cmp word[direction],-156
+    je addScoreForPlayer1
 
-    jmp doneMovingBall
+    add byte [player2Score], 1
+    call ResetEquipments
+    jmp DoneChecking
 
-    MoveBallUP: 
-        sub bx, 156
-        mov byte [directionFlag], 1
-        cmp bx, 740
-        jle changeDirection
+    checkForRightSide:
+        mov ax, [ballPosition]
+        div bx
+        cmp dx, 0
+        jne DoneChecking
 
-    jmp doneMovingBall
+        addScoreForPlayer1:
+        add byte [player1Score], 1
+        call ResetEquipments
 
-    changeDirection:
-        xor byte [directionFlag], 1
+    DoneChecking:
+    pop dx
+    pop bx
+    pop ax
+    ret 
 
+; A subroutine to reset the paddles and balls position
+ResetEquipments:
+    mov word [leftPaddle], 1760
+    mov word [rightPaddle], 1918
+    mov word [ballPosition], 1998
+    ret
 
-    doneMovingBall:
-        mov [ballPosition], bx
-        pop bx
-        ret
+; A subroutine to print clouds
+printClouds:
+    push di
+
+    mov di, [CloudsLocation]
+    push di
+    push word Clouds
+    call printMessage
+
+    add di, 160
+    cmp di, 3520
+    jl donePrintingClouds
+
+    mov di, 680
+
+    donePrintingClouds:
+        mov [CloudsLocation], di
+    pop di 
+    ret 
 
 ; A subroutine to reset the game
 resetGame:
@@ -485,6 +596,25 @@ resetGame:
     mov word [ballPosition], 1998
     mov byte [player1Score], 0x30
     mov byte [player2Score], 0x30
+    ret
+
+; A subroutine to decalre winner
+declareWinner:
+    
+    mov ax, 3
+    cmp byte [player1Score], 0x35
+    je player1Won
+
+    cmp byte [player2Score], 0x35
+    jne EndRoutine
+
+    mov ax, 2
+    jmp EndRoutine
+
+    player1Won:
+        mov ax, 1
+
+    EndRoutine:
     ret
 
 start:
@@ -497,28 +627,35 @@ start:
         cmp al, '2'
         je StaticScreen
         cmp al, '3'
-        je ExitOption
+        je near ExitOption
         jmp InValidInput
 
 MovingScreen:
-
+    call delay
     call clrScreen
+
+    call printClouds
+
     push word Score
     push word player2
     push word player1
     call printGameEnvironment
-    
-    mov di, 680
-    push di
-    push word Clouds
-    call printMessage
     call playGame
+    call moveBall
+    call checkLeftRightBorder
+
 
     cmp ax, 0x011B
     je start
-    jmp MovingScreen
+
+    call declareWinner
+    cmp ax, 3
+    jge MovingScreen
+    
+    jmp GameEnd
 
 StaticScreen:
+    call delay
     call clrScreen
     push word Score
     push word player2
@@ -526,14 +663,37 @@ StaticScreen:
     call printGameEnvironment
     call playGame
     call moveBall
-
+    call checkLeftRightBorder
    
     cmp ax, 0x011B
     je start
 
-    jmp StaticScreen
+    call declareWinner
+
+    cmp ax, 3
+    jge StaticScreen
+
 
 GameEnd:
+    call clrScreen
+    cmp ax, 1
+    je Player1Won
+
+    mov di, 1956
+    sub di, 160
+    push di
+    push word winner2
+    call printMessage
+    jmp printingin
+
+    Player1Won: 
+        mov di, 1956
+        sub di, 160
+        push di
+        push word winner1
+        call printMessage
+    
+    printingin:
     mov ax, 1956
     jmp Exit
 
