@@ -12,7 +12,7 @@ intro_6: db 'Waiting for your COMMAND.....', 0
 
 ; Pause and Restart Game Message
 PauseGameMessage: db 'Game Paused! Press any key to continue.', 0
-RestartGameMessage: db 'Press any key to restart the game and "ESC" to exit.', 0
+RestartGameMessage: db 'Press "R" to restart the game and "ESC" to exit.', 0
 
 ; some player required attributes 
 Score: db 'Score: ', 0
@@ -700,21 +700,14 @@ GameEnd:
         push word RestartGameMessage
         call printMessage
 
-        mov ah, 01h        ; Check if any key is pressed
-        int 16h
-        jz wait_for_input   ; If no key is pressed, wait for input
+        TakeInput:
+        call getKey
+        cmp ax , 0x011B
+        je endGame
 
-        mov ah, 00h        ; Get the key from buffer (ignore the previous one)
-        int 16h
-
-    wait_for_input:
-        mov ah, 00h        ; Now wait for a new keypress
-        int 16h
-
-        cmp ax, 0x011B
-        je endGame 
-
-        jmp start
+        cmp al, 'r'
+        je start
+        jmp TakeInput
 
     endGame:
     mov ax, 1956
