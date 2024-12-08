@@ -6,6 +6,10 @@ A simple Ping Pong game implemented in NASM assembly language for the EE2003 –
 ## Introduction
 This project is developed as part of the **EE2003 – Computer Organization and Assembly Language** course at **National University Computer & Emerging Sciences – Chiniot FSD Campus**. The aim of the project is to demonstrate assembly programming skills by implementing a simple yet engaging Ping Pong game using **NASM assembly language**. The game works in a **DOSBox** emulator and involves two players controlling paddles to prevent the ball from crossing their side, with scoring and a win condition implemented.
 
+## Developers
+- **Rizwan Mustafa Khan** (23F-0709)
+- **Muhammad Hassan** (23F-0676)
+
 ## Features
 - Two-player gameplay with keyboard controls.
 - Ball movement and paddle collision logic.
