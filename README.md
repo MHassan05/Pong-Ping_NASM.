@@ -30,7 +30,7 @@ This project is developed as part of the **EE2003 – Computer Organization and 
 
 ## How to Run
 1. Set up your development environment with **NASM** and **DOSBox**.
-2. Assemble the `.asm` file using NASM to create a `.COM` or `.EXE` file.For instance in this case I have named this `.asm` file as 'PinPong.asm'. So, to assemble the file I'll write "nasm PingPong.asm -o PingPong.com".
+2. Assemble the `.asm` file using NASM to create a `.COM` or `.EXE` file.For instance in this case I have named this `.asm` file as `PinPong.asm`. So, to assemble the file I'll write `nasm PingPong.asm -o PingPong.com`.
 3. Run the file in **DOSBox** to play the game.
 
 ## Controls
