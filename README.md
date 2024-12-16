@@ -30,14 +30,14 @@ This project is developed as part of the **EE2003 – Computer Organization and 
 
 ## How to Run
 1. Set up your development environment with **NASM** and **DOSBox**.
-2. Assemble the `.asm` file using NASM to create a `.COM` or `.EXE` file.
+2. Assemble the `.asm` file using NASM to create a `.COM` or `.EXE` file.For instance in this case I have named this `.asm` file as 'PinPong.asm'. So, to assemble the file I'll write "nasm PingPong.asm -o PingPong.com".
 3. Run the file in **DOSBox** to play the game.
 
 ## Controls
 - **Player 1:** Use 'W' to move up and 'S' to move down.
 - **Player 2:** Use the Up and Down arrow keys to control the paddle.
 - **Pause/Resume:** Press 'P'.
-- **Restart Game:** After a win, press any key to restart or 'ESC' to exit.
+- **Restart Game:** After a win, press 'r/R' key to restart or 'ESC' to exit.
 
 ## Future Improvements
 - Improved collision detection and smoother gameplay.
